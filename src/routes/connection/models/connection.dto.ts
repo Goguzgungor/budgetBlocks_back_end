@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Decimal } from "@prisma/client/runtime";
 import { PublicKey } from "@solana/web3.js";
 import { String } from "aws-sdk/clients/batch";
 
@@ -20,4 +21,39 @@ export class TransactionDto{
 
     @ApiProperty({ type: String, required: true, example:10000})
     balance:number;
+}
+export class UserWalletRelationDto{
+
+    @ApiProperty({ type: String, required: true, example:1})
+    id:number;
+
+
+    @ApiProperty({ type: String, required: true, example:1})
+    user_id:number;
+
+
+    @ApiProperty({ type: String, required: true, example:1})
+    mainwallet_id:number;
+
+
+    @ApiProperty({ type: String, required: true, example:1})
+    sub_wallet_id:number;
+
+}
+export class TransactionnDto{
+
+
+    @ApiProperty({ type: String, required: true, example:1})
+    id:number;
+
+    @ApiProperty({ type: String, required: true, example:2.00})
+    balance:Decimal;
+
+    @ApiProperty({ type: String, required: true, example:'WAITING'})
+    status:string;
+
+
+    @ApiProperty({ type: String, required: true, example:1})
+    user_wallet_relation_id:number;
+
 }

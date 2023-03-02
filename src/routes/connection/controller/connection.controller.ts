@@ -2,7 +2,8 @@ import { Body, Controller, Param, Query } from "@nestjs/common";
 import { ConnectionService } from '../service/connection.service';
 import { ApiTags } from "@nestjs/swagger";
 import { ApiGet, ApiPost } from "src/core/models/default.route.decorator";
-import { MnemonicDto, TransactionDto } from '../models/keypair.dto';
+import { MnemonicDto, TransactionDto } from '../models/connection.dto';
+import { DbService } from '../../../core/db/db.service';
 
 
 @ApiTags('Connection')

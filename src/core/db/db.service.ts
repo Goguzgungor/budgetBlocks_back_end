@@ -1,11 +1,15 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, INestApplication } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { PrismaUniversal } from 'prisma-decimal/lib/prisma.universal';
+
 
 @Injectable()
 export class DbService
-  extends PrismaClient
+  extends PrismaUniversal
   implements OnModuleInit {
   async onModuleInit() {
+    // optional: this.models = ['table'];
+    this.$use(this.convertDecimal);
     await this.$connect();
   }
 

@@ -1,10 +1,11 @@
-import { Controller, Injectable } from "@nestjs/common";
+import { Controller, Injectable, Post } from '@nestjs/common';
 import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, clusterApiUrl, sendAndConfirmTransaction } from "@solana/web3.js";
 import { Service } from "aws-sdk";
 import * as bs58 from "bs58";
-import { KeyPairDto, MnemonicDto, TransactionDto } from '../models/keypair.dto';
+import { KeyPairDto, MnemonicDto, TransactionDto, TransactionnDto, UserWalletRelationDto } from '../models/connection.dto';
 import * as bip39 from "bip39";
 import { KeyPair } from 'aws-sdk/clients/opsworkscm';
+import { DbService } from '../../../core/db/db.service';
 
 
 
@@ -15,6 +16,9 @@ import { KeyPair } from 'aws-sdk/clients/opsworkscm';
 
 @Injectable()
 export class ConnectionService {
+    constructor(private dbService: DbService) {
+        
+    }
     createorReplaceWallet() {
 
     }
@@ -31,10 +35,18 @@ export class ConnectionService {
         const mnemonic = bip39.generateMnemonic();
         const seed = bip39.mnemonicToSeedSync(mnemonic, ""); // (mnemonic, password)
         const keypair = Keypair.fromSeed(seed.slice(0, 32));
-        console.log(`${keypair.publicKey.toBase58()}`);
-        this.requestAirDrop(keypair);
+        const create_main_wallet_blockchain = await this.dbService.main_wallet_blockchain.create({data:{
+            balance:100,
+            nmemonic_phrase: mnemonic,
+        }});
+        
+        const create_main_wallet = await this.dbService.main_wallet.create({data:{
+            balance:100,
+            main_wallet_id: create_main_wallet_blockchain.id
+        }});
+        
         return {
-            mnemonic
+            mnemonic:mnemonic,main_wallet_id:create_main_wallet.id
         }
     }
     async generateKeyPair() {
@@ -61,6 +73,7 @@ export class ConnectionService {
         ])
 
     }
+    
     importWallet(mnemonic: MnemonicDto) {
 
         const seed = bip39.mnemonicToSeedSync(mnemonic.mnemonic, ""); // (mnemonic, password)
@@ -99,6 +112,44 @@ export class ConnectionService {
 
     }
 
+
+ async createSubWallet() {
+        const connection = new Connection('https://api.devnet.solana.com');
+        const mnemonic = bip39.generateMnemonic();
+        const seed = bip39.mnemonicToSeedSync(mnemonic, ""); // (mnemonic, password)
+        const keypair = Keypair.fromSeed(seed.slice(0, 32));
+        console.log(`${keypair.publicKey.toBase58()}`);
+        this.requestAirDrop(keypair);
+        const create_sub_wallet_blockchain = await this.dbService.sub_wallet_blockchain.create({data:{
+            balance:100,
+            nmemonic_phrase: mnemonic,
+        }});
+        
+        const create_main_wallet = await this.dbService.sub_wallet.create({data:{
+            balance:100,
+            sub_wallet_blockchain_id: create_sub_wallet_blockchain.id
+        }});
+        
+        return {
+            mnemonic
+        }
+    }
+
+    async userWalletRelationCreate(relation:UserWalletRelationDto){
+
+        const create= await  this.dbService.user_wallet_relation.create({
+            data:{
+                user_id:relation.user_id,
+                mainwallet_id:relation.mainwallet_id,
+                sub_wallet_id:relation.sub_wallet_id,
+            }
+        })
+    }
+    
+
+    sendTransactionRequest(transaction:TransactionnDto){
+
+    }
 
 }
 

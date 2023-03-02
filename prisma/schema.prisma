@@ -8,20 +8,20 @@ datasource db {
 }
 
 model main_wallet {
-  id                   Int                    @id
+  id                   Int                    @id @default(autoincrement())
   balance              Decimal?               @db.Decimal
   main_wallet_id       Int?
   user_wallet_relation user_wallet_relation[]
 }
 
 model main_wallet_blockchain {
-  id              Int      @id
+  id              Int      @id @default(autoincrement())
   balance         Decimal? @db.Decimal
   nmemonic_phrase String?  @db.VarChar(100)
 }
 
 model sub_wallet {
-  id                       Int                    @id
+  id                       Int                    @id @default(autoincrement())
   balance                  Decimal?               @db.Decimal
   sub_wallet_blockchain_id Int?
   max_val                  Decimal?               @db.Decimal
@@ -29,13 +29,13 @@ model sub_wallet {
 }
 
 model sub_wallet_blockchain {
-  id              Int      @id
+  id              Int      @id @default(autoincrement())
   balance         Decimal? @db.Decimal
   nmemonic_phrase String?  @db.VarChar(100)
 }
 
 model transaction {
-  id                      Int                   @id
+  id                      Int                   @id @default(autoincrement())
   balance                 Decimal?              @db.Decimal
   status                  String?               @db.VarChar(50)
   user_wallet_relation_id Int?
@@ -43,7 +43,7 @@ model transaction {
 }
 
 model user {
-  id                   Int                    @id
+  id                   Int                    @id @default(autoincrement())
   user_name            String?                @db.VarChar(50)
   e_mail               String?                @map("e-mail") @db.VarChar(50)
   password             String?                @db.VarChar(50)
@@ -51,7 +51,7 @@ model user {
 }
 
 model user_wallet_relation {
-  id            Int           @id
+  id            Int           @id @default(autoincrement())
   user_id       Int?
   mainwallet_id Int?
   sub_wallet_id Int?
