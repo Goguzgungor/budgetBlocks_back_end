@@ -19,7 +19,7 @@ export class TransactionDto{
     reciver_public_key: string;
 
 
-    @ApiProperty({ type: String, required: true, example:10000})
+    @ApiProperty({ type: Number, required: true, example:10000})
     balance:number;
 }
 export class UserWalletRelationDto{

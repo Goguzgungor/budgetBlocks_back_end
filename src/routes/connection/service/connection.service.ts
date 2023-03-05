@@ -65,13 +65,13 @@ export class ConnectionService {
             SystemProgram.transfer({
                 fromPubkey: keyPair.publicKey,
                 toPubkey: new PublicKey(transaction.reciver_public_key),
-                lamports: transaction.balance,
+                lamports: transaction.balance  ,
             })
         );
-        await sendAndConfirmTransaction(connection, transferTransaction, [
+         const signature:string = await sendAndConfirmTransaction(connection, transferTransaction, [
             keyPair
         ])
-
+        return signature;
     }
     
     importWallet(mnemonic: MnemonicDto) {
@@ -113,27 +113,7 @@ export class ConnectionService {
     }
 
 
- async createSubWallet() {
-        const connection = new Connection('https://api.devnet.solana.com');
-        const mnemonic = bip39.generateMnemonic();
-        const seed = bip39.mnemonicToSeedSync(mnemonic, ""); // (mnemonic, password)
-        const keypair = Keypair.fromSeed(seed.slice(0, 32));
-        console.log(`${keypair.publicKey.toBase58()}`);
-        this.requestAirDrop(keypair);
-        const create_sub_wallet_blockchain = await this.dbService.sub_wallet_blockchain.create({data:{
-            balance:100,
-            nmemonic_phrase: mnemonic,
-        }});
-        
-        const create_main_wallet = await this.dbService.sub_wallet.create({data:{
-            balance:100,
-            sub_wallet_blockchain_id: create_sub_wallet_blockchain.id
-        }});
-        
-        return {
-            mnemonic
-        }
-    }
+
 
     async userWalletRelationCreate(relation:UserWalletRelationDto){
 
@@ -149,6 +129,37 @@ export class ConnectionService {
 
     sendTransactionRequest(transaction:TransactionnDto){
 
+    }
+    async getBalance(pubKey:PublicKey){
+        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+        let accountBalance : number=  await connection.getBalance(pubKey) / LAMPORTS_PER_SOL; 
+        console.log(accountBalance);
+        return accountBalance;
+    }
+    
+    
+    async  mnemonicToGetBalance(mnemonic:string):Promise<number>{
+        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+        const seed = await bip39.mnemonicToSeed(mnemonic);
+        // Derive a keypair from the seed
+        const keypair = Keypair.fromSeed(seed.slice(0, 32));
+        // Get the public key
+        const publicKey = keypair.publicKey;
+        const balance = await this.getBalance(publicKey);
+        console.log(publicKey);
+        return balance;
+        //return await this.getBalance(publicKey);
+        
+    }
+    async  mnemonicToPubKey(mnemonic:string):Promise<string>{
+        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+        const seed = await bip39.mnemonicToSeed(mnemonic);
+        // Derive a keypair from the seed
+        const keypair = Keypair.fromSeed(seed.slice(0, 32));
+        // Get the public key
+        const publicKey = keypair.publicKey.toBase58();
+        return publicKey;
+        
     }
 
 }
