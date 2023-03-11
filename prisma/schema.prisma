@@ -13,26 +13,27 @@ model main_wallet {
   main_wallet_name     String?                @db.VarChar(20)
   main_wallet_id       Int?
   user_wallet_relation user_wallet_relation[]
+  user                 user[]
 }
 
 model main_wallet_blockchain {
   id              Int      @id @default(autoincrement())
   balance         Decimal? @db.Decimal
   nmemonic_phrase String?  @db.VarChar(100)
-  publicKey String?  @db.VarChar(100)
+  publicKey       String?  @db.VarChar(100)
 }
 
 model sub_wallet {
   id                   Int                   @id @default(autoincrement())
   balance              Decimal?              @db.Decimal
-  user_name            String?               @db.VarChar(50)
-  public_key           String?               @db.VarChar(100)
-  e_mail               String?               @map("e-mail") @db.VarChar(50)
-  password             String?               @db.VarChar(50)
   max_val              Decimal?              @db.Decimal
   sub_wallet_name      String?               @db.VarChar(20)
   blockchain_balance   Decimal?              @db.Decimal
+  e_mail               String?               @map("e-mail") @db.VarChar(50)
   nmemonic_phrase      String?               @db.VarChar(100)
+  password             String?               @db.VarChar(50)
+  user_name            String?               @db.VarChar(50)
+  public_key           String?               @db.VarChar(100)
   user_wallet_relation user_wallet_relation?
 }
 
@@ -40,8 +41,8 @@ model transaction {
   id                      Int                   @id @default(autoincrement())
   balance                 Decimal?              @db.Decimal
   status                  String?               @db.VarChar(50)
-  receiver_pub_key        String?               @db.VarChar(100)
   user_wallet_relation_id Int?
+  receiver_pub_key        String?               @db.VarChar(100)
   user_wallet_relation    user_wallet_relation? @relation(fields: [user_wallet_relation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_transaction.user_wallet_relation_id")
 }
 
@@ -51,6 +52,8 @@ model user {
   e_mail               String?                @map("e-mail") @db.VarChar(50)
   password             String?                @db.VarChar(50)
   user_wallet_relation user_wallet_relation[]
+  main_wallet          main_wallet?           @relation(fields: [mainwallet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_wallet_relation.mainwallet_id")
+  mainwallet_id        Int?
 }
 
 model user_wallet_relation {

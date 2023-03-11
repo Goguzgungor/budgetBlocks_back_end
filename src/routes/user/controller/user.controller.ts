@@ -49,7 +49,7 @@ export class UserController {
 
 
     
-    @ApiPost('/create/pendingtransaction','User creates subwallet')
+    @ApiPost('/create/pendingtransaction','pendingTransaction list')
     async pendingTransaction(@Body() item:PendingTransactinDto){
         const resp= await this.service.pendingTransaction(item);
         return resp;
@@ -57,7 +57,7 @@ export class UserController {
 
 
 
-    @ApiGet('/subwallet/list/:user_id','User creates subwallet')
+    @ApiGet('/subwallet/list/:user_id','getSubWalletList')
     async getSubWalletList(@Param('user_id', ParseIntPipe) user_id:number){
         const resp= await this.service.getSubWalletList(user_id);
         return resp;

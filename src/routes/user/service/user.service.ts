@@ -67,6 +67,13 @@ export class UserService {
     async userCreatesMainWallet(user_idd: number) {
 
         const wallet_creation = await this.conService.createWallet();
+        const update_user = await this.dbService.user.update({
+            where:{
+                id:user_idd
+            },data:{
+             mainwallet_id:wallet_creation.main_wallet_id   
+            }
+        })
         const balance = await this.conService.mnemonicToGetBalance(wallet_creation.mnemonic);
         console.log(balance);
         
@@ -121,10 +128,11 @@ export class UserService {
         try {
             const sql = `select u.id,u.user_name,u."e-mail",u.password,mw.id as mainwallet_id,mwb."publicKey"
             from "user" u
-            join user_wallet_relation uwr on u.id = uwr.user_id
-            join main_wallet mw on uwr.mainwallet_id = mw.id
-            left join main_wallet_blockchain mwb on mw.main_wallet_id = mwb.id where (u.password = '${user.password}') and (u.user_name = '${user.user_name}') limit 1`;
+           left join main_wallet mw on u.mainwallet_id = mw.id
+            left join main_wallet_blockchain mwb on mw.main_wallet_id = mwb.id where (u.password = '${user.password}') and (u.user_name = '${user.user_name}') limit 1;`;
             const main_wallet_query: any[] = await this.dbService.$queryRawUnsafe(sql);
+            console.log(main_wallet_query);
+            
             if (main_wallet_query.length) {
                 return { data:main_wallet_query[0], type: 'mainwallet'};
             }
