@@ -6,7 +6,7 @@ import * as bip39 from "bip39";
 import { KeyPair } from 'aws-sdk/clients/opsworkscm';
 import { DbService } from '../../../core/db/db.service';
 import { createSecureServer } from 'http2';
-import { UserDto, RelationDto, UserCreatesSubWalletDto, SendTransactionDto, PendingTransactinDto } from '../models/user.dto';
+import { UserDto, RelationDto, UserCreatesSubWalletDto, SendTransactionDto, PendingTransactinDto, SendSubTransactionDto } from '../models/user.dto';
 import { ConnectionService } from '../../connection/service/connection.service';
 import { CompletedDto } from '../../../core/models/default-dto';
 import { HttpError } from '../../../core/validations/exception';
@@ -40,7 +40,24 @@ export class UserService {
         const transactionObject:TransactionDto={
             mnemonic: resp.nmemonic_phrase,
             reciver_public_key: tranDto.reciver_public_key,
-            balance: tranDto.balance
+            balance: tranDto.balance*LAMPORTS_PER_SOL
+        }
+
+        const transaction =await this.conService.transferTransaction(transactionObject);
+        return {transaction_id:transaction};
+    }
+
+    async makeTransactionSubWallet(tranDto:SendSubTransactionDto){
+        const resp = await this.dbService.sub_wallet.findFirst({
+            where:{
+                id:tranDto.mainwallet_id
+            }
+
+        })
+        const transactionObject:TransactionDto={
+            mnemonic: resp.nmemonic_phrase,
+            reciver_public_key: tranDto.reciver_public_key,
+            balance: tranDto.balance*LAMPORTS_PER_SOL
         }
 
         const transaction =await this.conService.transferTransaction(transactionObject);
@@ -54,7 +71,8 @@ export class UserService {
         console.log(balance);
         
         const split_mnemonic = wallet_creation.mnemonic.split(" ");
-        const return_object = { 'mnemonic': split_mnemonic, 'mainwallet_id': wallet_creation.main_wallet_id }
+        const return_object = { 'mnemonic': split_mnemonic, 'mainwallet_id': wallet_creation.main_wallet_id,public_key:wallet_creation.publicKey
+    }
         return return_object;
     }
 
@@ -72,17 +90,15 @@ export class UserService {
     }
     async showSubWalletBalance(subwallet_id: number) {
 
-
-        const resp = await this.dbService.sub_wallet.findFirst({
-            where:{
-                id :subwallet_id
-            },
-            select:{
-                balance:true
-            }
-        }
-        );
-        return resp;
+        const resp = await this.dbService.sub_wallet.findUnique({where:{
+            id:subwallet_id
+        },select:{
+            nmemonic_phrase:true
+        }})
+        const mnemonic: string = resp.nmemonic_phrase
+        console.log(mnemonic);
+        const balance = await this.conService.mnemonicToGetBalance(mnemonic);
+        return balance;
     }
 
     async login(user: UserDto) {
@@ -103,22 +119,14 @@ export class UserService {
 
         }
         try {
-            const main_wallet_query = await this.dbService.user.findFirst({
-                where: {
-                    user_name: user.user_name,
-                    password: user.password
-                }
-            })
-            const main_wallet_id = await this.dbService.user_wallet_relation.findFirst({
-                where: {
-                    user_id:main_wallet_query.id
-                },
-                select:{
-                    mainwallet_id:true
-                }
-            })
-            if (main_wallet_query) {
-                return { data: main_wallet_query, type: 'mainwallet',main_wallet_id};
+            const sql = `select u.id,u.user_name,u."e-mail",u.password,mw.id as mainwallet_id,mwb."publicKey"
+            from "user" u
+            join user_wallet_relation uwr on u.id = uwr.user_id
+            join main_wallet mw on uwr.mainwallet_id = mw.id
+            left join main_wallet_blockchain mwb on mw.main_wallet_id = mwb.id where (u.password = '${user.password}') and (u.user_name = '${user.user_name}') limit 1`;
+            const main_wallet_query: any[] = await this.dbService.$queryRawUnsafe(sql);
+            if (main_wallet_query.length) {
+                return { data:main_wallet_query[0], type: 'mainwallet'};
             }
         } catch (error) {
             console.log(error);
@@ -163,7 +171,7 @@ export class UserService {
     }
     async getTransactionList(user_id:number) {
 
-       const sql=`select  t.*,sw.sub_wallet_name from transaction t
+       const sql=`select  t.*,sw.sub_wallet_name,sw.id as sub_wallet_id from transaction t
        join user_wallet_relation uwr on t.user_wallet_relation_id = uwr.id
        join "user" u on uwr.user_id = u.id
        join sub_wallet sw on uwr.sub_wallet_id = sw.id where u.id=${user_id};`

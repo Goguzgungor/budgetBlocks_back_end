@@ -57,3 +57,14 @@ export class TransactionnDto{
     user_wallet_relation_id:number;
 
 }
+export class SubWalletUpdateDto{
+    @ApiProperty({ type:Number, required: true, example:1})
+    id:number;
+
+    @ApiProperty({ type: Decimal, required: true, example:2.00})
+    max_val:Decimal;
+
+    @ApiProperty({ type: String, required: true, example:'my vallet name'})
+    sub_wallet_name:String;
+
+}

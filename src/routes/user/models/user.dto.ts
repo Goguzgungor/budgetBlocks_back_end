@@ -38,6 +38,17 @@ export class SendTransactionDto {
     mainwallet_id:number;
     
 }
+export class SendSubTransactionDto {
+    
+    @ApiProperty({ type: String, required: true, example: 1 })
+    reciver_public_key:string;
+    @ApiProperty({ type: Number, required: true, example: 1 })
+    balance:number;
+    
+    @ApiProperty({ type: Number, required: true, example: 1 })
+    mainwallet_id:number;
+    
+}
 export class SendAcceptTransactionDto {
     
     @ApiProperty({ type: String, required: true, example: 1 })

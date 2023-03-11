@@ -78,7 +78,7 @@ export class UserController {
     
         @ApiPost('/transactions/accept','User creates subwallet')
         async acceptTransactions(@Body() transacDto:SendAcceptTransactionDto){
-            const tran= await this.service.makeTransactionMainWallet(transacDto);
+            const tran= await this.service.makeTransactionSubWallet(transacDto);
             const accept= await this.service.acceptTransactions(transacDto.transaction_id);
             return tran;
         }

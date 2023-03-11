@@ -1,8 +1,8 @@
 import { Body, Controller, Param, Query } from "@nestjs/common";
 import { ConnectionService } from '../service/connection.service';
 import { ApiTags } from "@nestjs/swagger";
-import { ApiGet, ApiPost } from "src/core/models/default.route.decorator";
-import { MnemonicDto, TransactionDto } from '../models/connection.dto';
+import { ApiGet, ApiPost, ApiPut } from "src/core/models/default.route.decorator";
+import { MnemonicDto, SubWalletUpdateDto, TransactionDto } from '../models/connection.dto';
 import { DbService } from '../../../core/db/db.service';
 
 
@@ -34,6 +34,12 @@ export class ConnectionController{
     @ApiGet('/transaction/:publicKey','2 hesap arasında transaction yapar')
     async showBalance(@Query('publicKey') publicKey:string){
         const resp = await this.service.showBalance(publicKey);
+        return resp;
+    }
+
+    @ApiPut('/subwallet/update','update subwallets datas')
+    async updateSubWallet(@Body() item:SubWalletUpdateDto){
+        const resp = this.service.updateSubWallet(item);
         return resp;
     }
 }

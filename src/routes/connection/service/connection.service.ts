@@ -2,10 +2,11 @@ import { Controller, Injectable, Post } from '@nestjs/common';
 import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, clusterApiUrl, sendAndConfirmTransaction } from "@solana/web3.js";
 import { Service } from "aws-sdk";
 import * as bs58 from "bs58";
-import { KeyPairDto, MnemonicDto, TransactionDto, TransactionnDto, UserWalletRelationDto } from '../models/connection.dto';
+import { KeyPairDto, MnemonicDto, TransactionDto, TransactionnDto, SubWalletUpdateDto, UserWalletRelationDto } from '../models/connection.dto';
 import * as bip39 from "bip39";
 import { KeyPair } from 'aws-sdk/clients/opsworkscm';
 import { DbService } from '../../../core/db/db.service';
+import { CompletedDto } from '../../../core/models/default-dto';
 
 
 
@@ -34,19 +35,21 @@ export class ConnectionService {
         const connection = new Connection('https://api.devnet.solana.com');
         const mnemonic = bip39.generateMnemonic();
         const seed = bip39.mnemonicToSeedSync(mnemonic, ""); // (mnemonic, password)
-        const keypair = Keypair.fromSeed(seed.slice(0, 32));
+        const keypair:Keypair = Keypair.fromSeed(seed.slice(0, 32));
+        const public_key :string = keypair.publicKey.toBase58();
         const create_main_wallet_blockchain = await this.dbService.main_wallet_blockchain.create({data:{
-            balance:100,
+            balance:0.0,
             nmemonic_phrase: mnemonic,
+            publicKey:public_key
         }});
         
         const create_main_wallet = await this.dbService.main_wallet.create({data:{
-            balance:100,
+            balance:0.0,
             main_wallet_id: create_main_wallet_blockchain.id
         }});
         
         return {
-            mnemonic:mnemonic,main_wallet_id:create_main_wallet.id
+            mnemonic:mnemonic,main_wallet_id:create_main_wallet.id,publicKey:public_key
         }
     }
     async generateKeyPair() {
@@ -162,6 +165,18 @@ export class ConnectionService {
         
     }
 
+    async updateSubWallet(item:SubWalletUpdateDto):Promise<CompletedDto>{
+        const update = await this.dbService.sub_wallet.update({
+            where:{
+                id:item.id
+            },
+            data:{
+                max_val:item.max_val,
+                sub_wallet_name:item.sub_wallet_name
+            }
+        });
+        return {completed:true};
+    }
 }
 
 

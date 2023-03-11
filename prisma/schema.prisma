@@ -19,6 +19,7 @@ model main_wallet_blockchain {
   id              Int      @id @default(autoincrement())
   balance         Decimal? @db.Decimal
   nmemonic_phrase String?  @db.VarChar(100)
+  publicKey String?  @db.VarChar(100)
 }
 
 model sub_wallet {
