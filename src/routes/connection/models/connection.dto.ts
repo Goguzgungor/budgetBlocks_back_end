@@ -13,7 +13,7 @@ export class MnemonicDto{
 }
 export class TransactionDto{
     @ApiProperty({ type: String, required: true, example:'above dwarf insect candy green gather venture gaze glare spirit casino among'})
-    mnemonic: string;
+    private_key: string;
 
     @ApiProperty({ type: String, required: true, example:'8WjXrdfsLKt9kk58w3AHMLdm4GNigRW3ub8SHy88KSTp'})
     reciver_public_key: string;

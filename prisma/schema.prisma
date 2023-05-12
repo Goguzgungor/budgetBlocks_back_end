@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("LOCAL_DB_URL")
 }
 
 model main_wallet {
@@ -12,14 +12,14 @@ model main_wallet {
   balance              Decimal?               @db.Decimal
   main_wallet_name     String?                @db.VarChar(20)
   main_wallet_id       Int?
-  user_wallet_relation user_wallet_relation[]
   user                 user[]
+  user_wallet_relation user_wallet_relation[]
 }
 
 model main_wallet_blockchain {
   id              Int      @id @default(autoincrement())
   balance         Decimal? @db.Decimal
-  nmemonic_phrase String?  @db.VarChar(100)
+  private_key String?  @db.VarChar(100)
   publicKey       String?  @db.VarChar(100)
 }
 
@@ -30,7 +30,7 @@ model sub_wallet {
   sub_wallet_name      String?               @db.VarChar(20)
   blockchain_balance   Decimal?              @db.Decimal
   e_mail               String?               @map("e-mail") @db.VarChar(50)
-  nmemonic_phrase      String?               @db.VarChar(100)
+  private_key      String?               @db.VarChar(100)
   password             String?               @db.VarChar(50)
   user_name            String?               @db.VarChar(50)
   public_key           String?               @db.VarChar(100)
@@ -51,9 +51,9 @@ model user {
   user_name            String?                @db.VarChar(50)
   e_mail               String?                @map("e-mail") @db.VarChar(50)
   password             String?                @db.VarChar(50)
-  user_wallet_relation user_wallet_relation[]
-  main_wallet          main_wallet?           @relation(fields: [mainwallet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_wallet_relation.mainwallet_id")
   mainwallet_id        Int?
+  main_wallet          main_wallet?           @relation(fields: [mainwallet_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_user_wallet_relation.mainwallet_id")
+  user_wallet_relation user_wallet_relation[]
 }
 
 model user_wallet_relation {

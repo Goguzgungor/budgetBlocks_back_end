@@ -21,17 +21,17 @@ export class ConnectionController{
 
 
 
-    @ApiPost('import','Var olan bir cüzdanı bağlar')
-    async importWallet(@Body() mnemonic:MnemonicDto){
-        const resp = await this.service.importWallet(mnemonic);
-        return resp;
-    }
+    // @ApiPost('import','Var olan bir cüzdanı bağlar')
+    // async importWallet(@Body() mnemonic:MnemonicDto){
+    //     const resp = await this.service.importWallet(mnemonic);
+    //     return resp;
+    // }
     @ApiPost('transaction','2 hesap arasında transaction yapar')
     async transaction(@Body() transaction:TransactionDto){
-        const resp = await this.service.transferTransaction(transaction);
+        const resp = await this.service.transferTransactioneth(transaction);
         return resp;
     }
-    @ApiGet('/transaction/:publicKey','2 hesap arasında transaction yapar')
+    @ApiGet('/transaction/:publicKey','Show Balance')
     async showBalance(@Query('publicKey') publicKey:string){
         const resp = await this.service.showBalance(publicKey);
         return resp;

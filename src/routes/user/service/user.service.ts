@@ -38,12 +38,12 @@ export class UserService {
 
         })
         const transactionObject:TransactionDto={
-            mnemonic: resp.nmemonic_phrase,
+            private_key: resp.private_key,
             reciver_public_key: tranDto.reciver_public_key,
             balance: tranDto.balance*LAMPORTS_PER_SOL
         }
 
-        const transaction =await this.conService.transferTransaction(transactionObject);
+        const transaction =await this.conService.transferTransactioneth(transactionObject);
         return {transaction_id:transaction};
     }
 
@@ -55,12 +55,12 @@ export class UserService {
 
         })
         const transactionObject:TransactionDto={
-            mnemonic: resp.nmemonic_phrase,
+            private_key: resp.private_key,
             reciver_public_key: tranDto.reciver_public_key,
             balance: tranDto.balance*LAMPORTS_PER_SOL
         }
 
-        const transaction =await this.conService.transferTransaction(transactionObject);
+        const transaction =await this.conService.transferTransactioneth(transactionObject);
         return {transaction_id:transaction};
     }
 
@@ -74,7 +74,7 @@ export class UserService {
              mainwallet_id:wallet_creation.main_wallet_id   
             }
         })
-        const balance = await this.conService.mnemonicToGetBalance(wallet_creation.mnemonic);
+        const balance = await this.conService.privateKeyToBalance(wallet_creation.mnemonic);
         console.log(balance);
         
         const split_mnemonic = wallet_creation.mnemonic.split(" ");
@@ -92,7 +92,7 @@ export class UserService {
         const resp = await this.dbService.$queryRawUnsafe(sql);
         const mnemonic: string = resp[0].nmemonic_phrase
         console.log(mnemonic);
-        const balance = await this.conService.mnemonicToGetBalance(mnemonic);
+        const balance = await this.conService.privateKeyToBalance(mnemonic);
         return balance;
     }
     async showSubWalletBalance(subwallet_id: number) {
@@ -100,11 +100,11 @@ export class UserService {
         const resp = await this.dbService.sub_wallet.findUnique({where:{
             id:subwallet_id
         },select:{
-            nmemonic_phrase:true
+            private_key:true
         }})
-        const mnemonic: string = resp.nmemonic_phrase
+        const mnemonic: string = resp.private_key
         console.log(mnemonic);
-        const balance = await this.conService.mnemonicToGetBalance(mnemonic);
+        const balance = await this.conService.privateKeyToBalance(mnemonic);
         return balance;
     }
 
@@ -195,7 +195,7 @@ export class UserService {
         console.log(pubkey);
         const create_sub_wallet = await this.dbService.sub_wallet.create({data:{
             balance:item.balance,
-            nmemonic_phrase: mnemonic,
+            private_key: mnemonic,
             blockchain_balance:0,
             public_key:pubkey,
             user_name:item.user_name,
