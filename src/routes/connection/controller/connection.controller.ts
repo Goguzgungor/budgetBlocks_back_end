@@ -36,6 +36,11 @@ export class ConnectionController{
         const resp = await this.service.showBalance(publicKey);
         return resp;
     }
+    @ApiGet('/transaction/dumy/:publicKey','Dumy Func') 
+    async dumyEndpoint(@Query('publicKey') publicKey:string){
+        const resp = this.service.ethWallet();
+        return resp;
+    }
 
     @ApiPut('/subwallet/update','update subwallets datas')
     async updateSubWallet(@Body() item:SubWalletUpdateDto){

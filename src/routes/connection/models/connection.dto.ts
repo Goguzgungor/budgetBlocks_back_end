@@ -12,14 +12,14 @@ export class MnemonicDto{
     mnemonic: string;
 }
 export class TransactionDto{
-    @ApiProperty({ type: String, required: true, example:'above dwarf insect candy green gather venture gaze glare spirit casino among'})
+    @ApiProperty({ type: String, required: true, example:'74e0b9293f0f80f2549769f73ecc028e67071982762d2a41754c51c2657af74a'})
     private_key: string;
 
-    @ApiProperty({ type: String, required: true, example:'8WjXrdfsLKt9kk58w3AHMLdm4GNigRW3ub8SHy88KSTp'})
+    @ApiProperty({ type: String, required: true, example:'0x474B661ac68B304f6f1CaFeb862023F33D500d24'})
     reciver_public_key: string;
 
 
-    @ApiProperty({ type: Number, required: true, example:10000})
+    @ApiProperty({ type: Number, required: true, example:1000000000000000})
     balance:number;
 }
 export class UserWalletRelationDto{

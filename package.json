@@ -47,6 +47,7 @@
     "cache-manager-redis-store": "^3.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "ethereumjs-wallet": "^1.0.2",
     "moment": "^2.29.4",
     "passport-jwt": "^4.0.1",
     "prisma-decimal": "^1.1.7",

@@ -74,10 +74,10 @@ export class UserService {
              mainwallet_id:wallet_creation.main_wallet_id   
             }
         })
-        const balance = await this.conService.privateKeyToBalance(wallet_creation.mnemonic);
+        const balance = await this.conService.privateKeyToBalance(wallet_creation.privateKey);
         console.log(balance);
         
-        const split_mnemonic = wallet_creation.mnemonic.split(" ");
+        const split_mnemonic = wallet_creation.privateKey.split(" ");
         const return_object = { 'mnemonic': split_mnemonic, 'mainwallet_id': wallet_creation.main_wallet_id,public_key:wallet_creation.publicKey
     }
         return return_object;

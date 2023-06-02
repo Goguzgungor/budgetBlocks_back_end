@@ -7,7 +7,7 @@ import { DbService } from '../../../core/db/db.service';
 import { CompletedDto } from '../../../core/models/default-dto';
 import Web3 from 'web3';
 import { goerliRpcUrl } from '../../../core/constant/constants';
-import { get } from 'http';
+import Wallet, { hdkey } from 'ethereumjs-wallet';
 
 
 
@@ -66,7 +66,7 @@ export class ConnectionService {
         });
 
         return {
-            mnemonic: privateKey, main_wallet_id: create_main_wallet.id, publicKey: publicKey
+            privateKey: privateKey, main_wallet_id: create_main_wallet.id, publicKey: publicKey
         }
     }
 
@@ -109,12 +109,7 @@ export class ConnectionService {
         })
     }
 
-    async getBalance(pubKey: PublicKey) {
-        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-        let accountBalance: number = await connection.getBalance(pubKey) / LAMPORTS_PER_SOL;
-        console.log(accountBalance);
-        return accountBalance;
-    }
+   
 
 
 
@@ -126,6 +121,29 @@ export class ConnectionService {
         console.log(`${web3.utils.fromWei(balance, 'ether')} TOMO`);
         return balance;
     }
+     ethWallet() {
+        // Rastgele bir mnemonic ifadesi oluştur
+        const mnemonic: string = bip39.generateMnemonic();
+      
+        // Mnemonic ifadesini kullanarak bir seed oluştur
+        const seed: Buffer = bip39.mnemonicToSeedSync(mnemonic);
+      
+        // Seed'i kullanarak bir HD Wallet türet
+        const wallet: hdkey = hdkey.fromMasterSeed(seed);
+      
+        // İlk cüzdanı al
+        const addressNode = wallet.derivePath("m/44'/60'/0'/0/0");
+        const privateKey: string = addressNode.getWallet().getPrivateKeyString();
+        const publicKey: string = addressNode.getWallet().getPublicKeyString();
+        const address: string = addressNode.getWallet().getChecksumAddressString();
+      
+        return {
+          mnemonic,
+          privateKey,
+          publicKey,
+          address,
+        };
+      }
 
     async updateSubWallet(item: SubWalletUpdateDto): Promise<CompletedDto> {
         const update = await this.dbService.sub_wallet.update({
