@@ -1,17 +1,16 @@
 import { Controller, Injectable, Post } from '@nestjs/common';
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, clusterApiUrl, sendAndConfirmTransaction } from "@solana/web3.js";
-import { Service } from "aws-sdk";
-import * as bs58 from "bs58";
 import * as bip39 from "bip39";
-import { KeyPair } from 'aws-sdk/clients/opsworkscm';
 import { DbService } from '../../../core/db/db.service';
-import { createSecureServer } from 'http2';
 import { UserDto, RelationDto, UserCreatesSubWalletDto, SendTransactionDto, PendingTransactinDto, SendSubTransactionDto } from '../models/user.dto';
 import { ConnectionService } from '../../connection/service/connection.service';
 import { CompletedDto } from '../../../core/models/default-dto';
 import { HttpError } from '../../../core/validations/exception';
 import { Decimal } from '@prisma/client/runtime';
 import { TransactionDto } from '../../connection/models/connection.dto';
+import { hdkey } from 'ethereumjs-wallet';
+import Web3 from 'web3';
+const { ethers } = require('ethers');
+import { goerliRpcUrl } from 'src/core/constant/constants';
 @Injectable()
 export class UserService {
 
@@ -40,7 +39,7 @@ export class UserService {
         const transactionObject:TransactionDto={
             mnemonic: resp.nmemonic_phrase,
             reciver_public_key: tranDto.reciver_public_key,
-            balance: tranDto.balance*LAMPORTS_PER_SOL
+            balance: tranDto.balance*1000000000
         }
 
         const transaction =await this.conService.transferTransaction(transactionObject);
@@ -57,7 +56,7 @@ export class UserService {
         const transactionObject:TransactionDto={
             mnemonic: resp.nmemonic_phrase,
             reciver_public_key: tranDto.reciver_public_key,
-            balance: tranDto.balance*LAMPORTS_PER_SOL
+            balance: tranDto.balance*10000
         }
 
         const transaction =await this.conService.transferTransaction(transactionObject);
@@ -187,23 +186,28 @@ export class UserService {
        return query;
     }
     async createSubWallet(item: UserCreatesSubWalletDto) {
-        const connection = new Connection('https://api.devnet.solana.com');
-        const mnemonic = bip39.generateMnemonic();
-        const seed = bip39.mnemonicToSeedSync(mnemonic, ""); // (mnemonic, password)
-        const keypair = Keypair.fromSeed(seed.slice(0, 32));
-        const pubkey = keypair.publicKey.toBase58()
-        console.log(pubkey);
+
+        const provider = new Web3(goerliRpcUrl);
+        const wallet  = ethers.Wallet.createRandom();
+
+        // Mnemonic ifadeyi elde et
+        const mnemonic = wallet.mnemonic.phrase;
+      
+        // Cüzdanın public anahtarını elde et
+        const public_key = wallet.address;
+      
+        console.log(public_key);
         const create_sub_wallet = await this.dbService.sub_wallet.create({data:{
             balance:item.balance,
             nmemonic_phrase: mnemonic,
             blockchain_balance:0,
-            public_key:pubkey,
+            public_key:public_key,
             user_name:item.user_name,
             password:item.password,
             sub_wallet_name:item.sub_wallet_name,
         }});
         const find_sub_wallet = await this.dbService.sub_wallet.findFirst({where:{
-            public_key:pubkey
+            public_key:public_key
         }});
         console.table(find_sub_wallet);
         

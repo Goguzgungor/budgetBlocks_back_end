@@ -1,13 +1,15 @@
 import { Controller, Injectable, Post } from '@nestjs/common';
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, clusterApiUrl, sendAndConfirmTransaction } from "@solana/web3.js";
+
 import { Service } from "aws-sdk";
 import * as bs58 from "bs58";
 import { KeyPairDto, MnemonicDto, TransactionDto, TransactionnDto, SubWalletUpdateDto, UserWalletRelationDto } from '../models/connection.dto';
 import * as bip39 from "bip39";
-import { KeyPair } from 'aws-sdk/clients/opsworkscm';
+import Web3 from 'web3';
 import { DbService } from '../../../core/db/db.service';
 import { CompletedDto } from '../../../core/models/default-dto';
-
+import { goerliRpcUrl } from '../../../core/constant/constants';
+import Wallet from 'ethereumjs-wallet';
+const { ethers } = require('ethers');
 
 
 
@@ -24,19 +26,24 @@ export class ConnectionService {
 
     }
 
-    async showBalance(publicKey:string){
-        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-        let wallet = new PublicKey(publicKey);
-        let balance = await connection.getBalance(wallet);
-    console.log(`${balance / LAMPORTS_PER_SOL} SOL`);
-    return {balance:`${balance} LAMPORTS`};
+    async showBalance(publicKey) {
+        const web3 = new Web3(goerliRpcUrl);
+        let balance = await web3.eth.getBalance(publicKey);
+        console.log(`${web3.utils.fromWei(balance, 'ether')} TOMO`);
+        return { balance: `${balance} WEI` };
     }
     async createWallet() {
-        const connection = new Connection('https://api.devnet.solana.com');
-        const mnemonic = bip39.generateMnemonic();
-        const seed = bip39.mnemonicToSeedSync(mnemonic, ""); // (mnemonic, password)
-        const keypair:Keypair = Keypair.fromSeed(seed.slice(0, 32));
-        const public_key :string = keypair.publicKey.toBase58();
+        const provider = new Web3(goerliRpcUrl);
+        const wallet  = ethers.Wallet.createRandom();
+
+        // Mnemonic ifadeyi elde et
+        const mnemonic = wallet.mnemonic.phrase;
+      
+        // Cüzdanın public anahtarını elde et
+        const public_key = wallet.address;
+      
+    
+    // İlk cüzdanı al
         const create_main_wallet_blockchain = await this.dbService.main_wallet_blockchain.create({data:{
             balance:0.0,
             nmemonic_phrase: mnemonic,
@@ -52,68 +59,43 @@ export class ConnectionService {
             mnemonic:mnemonic,main_wallet_id:create_main_wallet.id,publicKey:public_key
         }
     }
-    async generateKeyPair() {
-        const mainAccount: Keypair = await Keypair.generate();
-        const publicKey: string = mainAccount.publicKey.toBase58();
-        const secretKey = mainAccount.secretKey
-        return { mainAccount };
-    }
+     getPrivateKeyFromMnemonic(mnemonic) {
+        const provider = new Web3(goerliRpcUrl);
 
-    async transferTransaction(transaction: TransactionDto) {
-
-        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-
-        const keyPair: Keypair = await this.importMnemonic(transaction.mnemonic)
-        const transferTransaction = await new Transaction().add(
-            SystemProgram.transfer({
-                fromPubkey: keyPair.publicKey,
-                toPubkey: new PublicKey(transaction.reciver_public_key),
-                lamports: transaction.balance  ,
-            })
-        );
-         const signature:string = await sendAndConfirmTransaction(connection, transferTransaction, [
-            keyPair
-        ])
-        return signature;
-    }
-    
-    importWallet(mnemonic: MnemonicDto) {
-
-        const seed = bip39.mnemonicToSeedSync(mnemonic.mnemonic, ""); // (mnemonic, password)
-        const mainAccount = Keypair.fromSeed(seed.slice(0, 32));
-        const publicKey: string = mainAccount.publicKey.toBase58();
-        const privateKey: string = bs58.encode(mainAccount.secretKey);
-        return { publicKey, privateKey };
-    }
-    async importMnemonic(mnemonic: string): Promise<Keypair> {
-
-        const seed = bip39.mnemonicToSeedSync(mnemonic, ""); // (mnemonic, password)
-        const mainAccount = await Keypair.fromSeed(seed.slice(0, 32));
-        return mainAccount;
-
-    }
-
-    async generateSeed() {
-        const mnemonic = await bip39.generateMnemonic();
-        const seed = await bip39.mnemonicToSeed(mnemonic);
-        return seed.slice(0, 32);
-    }
-
-    async requestAirDrop(keypair:Keypair){
+        // Mnemonic ifadeyi kullanarak bir cüzdan oluştur
+        const wallet = ethers.Wallet.fromPhrase(mnemonic);
+      
+        // Cüzdandan özel anahtarı elde et
+        const privateKey = wallet.privateKey;
+      
+        return privateKey;
+      }
+      async  transferTransaction(transaction:TransactionDto) {
+        const web3 = new Web3(goerliRpcUrl);
         
-  const connection = new Connection(
-    "https://api.devnet.solana.com",
-    "confirmed"
-  );
-
-  const airdropSignature = await connection.requestAirdrop(
-    keypair.publicKey,
-    LAMPORTS_PER_SOL
-  );
-
-  await connection.confirmTransaction(airdropSignature);
-
-    }
+        // Import the private key for the sender's account
+        const private_key = this.getPrivateKeyFromMnemonic(transaction.mnemonic);
+        const senderAccount = web3.eth.accounts.privateKeyToAccount(private_key);
+      
+        // Send the transaction
+        const tx = {
+          from: senderAccount.address,
+          to: transaction.reciver_public_key,
+          value: transaction.balance*10000000
+        };
+        const gas = await web3.eth.estimateGas(tx);
+        const gasPrice = await web3.eth.getGasPrice();
+        const nonce = await web3.eth.getTransactionCount(senderAccount.address);
+        const signedTx = await senderAccount.signTransaction({
+          ...tx,
+          gas,
+          gasPrice,
+          nonce,
+        });
+        const txReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+        return txReceipt.transactionHash;
+      }
+     
 
 
 
@@ -129,39 +111,22 @@ export class ConnectionService {
         })
     }
     
-
-    sendTransactionRequest(transaction:TransactionnDto){
-
-    }
-    async getBalance(pubKey:PublicKey){
-        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-        let accountBalance : number=  await connection.getBalance(pubKey) / LAMPORTS_PER_SOL; 
-        console.log(accountBalance);
-        return accountBalance;
+    async getBalance(pubKey:string):Promise<string>{
+        const web3 = new Web3(goerliRpcUrl);
+        let balance:string = await web3.eth.getBalance(pubKey);
+        return balance;
     }
     
     
-    async  mnemonicToGetBalance(mnemonic:string):Promise<number>{
-        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-        const seed = await bip39.mnemonicToSeed(mnemonic);
-        // Derive a keypair from the seed
-        const keypair = Keypair.fromSeed(seed.slice(0, 32));
-        // Get the public key
-        const publicKey = keypair.publicKey;
-        const balance = await this.getBalance(publicKey);
-        console.log(publicKey);
+    async  mnemonicToGetBalance(mnemonic:string):Promise<string>{
+        const web3 = new Web3(goerliRpcUrl);
+        const private_key = this.getPrivateKeyFromMnemonic(mnemonic);
+        const account = web3.eth.accounts.privateKeyToAccount(private_key);
+        const publicKey = account.address;
+        let balance = await web3.eth.getBalance(publicKey);
+        console.log(`${web3.utils.fromWei(balance, 'ether')} TOMO`);
         return balance;
         //return await this.getBalance(publicKey);
-        
-    }
-    async  mnemonicToPubKey(mnemonic:string):Promise<string>{
-        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-        const seed = await bip39.mnemonicToSeed(mnemonic);
-        // Derive a keypair from the seed
-        const keypair = Keypair.fromSeed(seed.slice(0, 32));
-        // Get the public key
-        const publicKey = keypair.publicKey.toBase58();
-        return publicKey;
         
     }
 

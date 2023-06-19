@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("LOCAL_DB_URL")
 }
 
 model main_wallet {
@@ -19,8 +19,8 @@ model main_wallet {
 model main_wallet_blockchain {
   id              Int      @id @default(autoincrement())
   balance         Decimal? @db.Decimal
-  nmemonic_phrase String?  @db.VarChar(100)
-  publicKey       String?  @db.VarChar(100)
+  nmemonic_phrase String?  @db.VarChar(200)
+  publicKey       String?  @db.VarChar(200)
 }
 
 model sub_wallet {
@@ -30,10 +30,10 @@ model sub_wallet {
   sub_wallet_name      String?               @db.VarChar(20)
   blockchain_balance   Decimal?              @db.Decimal
   e_mail               String?               @map("e-mail") @db.VarChar(50)
-  nmemonic_phrase      String?               @db.VarChar(100)
-  password             String?               @db.VarChar(50)
-  user_name            String?               @db.VarChar(50)
-  public_key           String?               @db.VarChar(100)
+  nmemonic_phrase      String?               @db.VarChar(200)
+  password             String?               @db.VarChar(200)
+  user_name            String?               @db.VarChar(200)
+  public_key           String?               @db.VarChar(200)
   user_wallet_relation user_wallet_relation?
 }
 
@@ -42,7 +42,7 @@ model transaction {
   balance                 Decimal?              @db.Decimal
   status                  String?               @db.VarChar(50)
   user_wallet_relation_id Int?
-  receiver_pub_key        String?               @db.VarChar(100)
+  receiver_pub_key        String?               @db.VarChar(200)
   user_wallet_relation    user_wallet_relation? @relation(fields: [user_wallet_relation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_transaction.user_wallet_relation_id")
 }
 
