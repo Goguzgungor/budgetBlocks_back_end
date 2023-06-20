@@ -4,7 +4,6 @@ import { ApiTags } from "@nestjs/swagger";
 import { ApiGet, ApiPost, ApiPut } from "src/core/models/default.route.decorator";
 import { MnemonicDto, SubWalletUpdateDto, TransactionDto } from '../models/connection.dto';
 import { DbService } from '../../../core/db/db.service';
-import { mnemonic_test, publickey_test } from "src/core/test_constant/example_value";
 
 
 @ApiTags('Connection')

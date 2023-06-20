@@ -18,5 +18,3 @@ export const CLUSTER: Cluster = 'devnet';
  * ONLY FOR SAMPLES NEVER EVER STORE YOUR/ANYONE'S PRIVATE KEY IN PLAIN TEXT
  * TODO: Insert your private key here
  */
-export const mnemonic_test:string ="host erosion giant write sock syrup ahead photo relief this fault scorpion";
-export const publickey_test:string ="99Grs8xvqrox8Zgcp2AgBVvWTBdBQp37YNgfzwLmsQ1P";

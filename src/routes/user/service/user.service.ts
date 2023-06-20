@@ -40,7 +40,7 @@ export class UserService {
         const transactionObject:TransactionDto={
             mnemonic: resp.nmemonic_phrase,
             reciver_public_key: tranDto.reciver_public_key,
-            balance: tranDto.balance*LAMPORTS_PER_SOL
+            balance: tranDto.balance
         }
 
         const transaction =await this.conService.elusivCreater(transactionObject);
@@ -57,7 +57,7 @@ export class UserService {
         const transactionObject:TransactionDto={
             mnemonic: resp.nmemonic_phrase,
             reciver_public_key: tranDto.reciver_public_key,
-            balance: tranDto.balance*LAMPORTS_PER_SOL
+            balance: tranDto.balance
         }
 
         const transaction =await this.conService.elusivCreater(transactionObject);

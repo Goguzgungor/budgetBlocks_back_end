@@ -7,9 +7,9 @@ import * as bip39 from "bip39";
 import { DbService } from '../../../core/db/db.service';
 import { CompletedDto } from '../../../core/models/default-dto';
 import { Elusiv, SEED_MESSAGE, TokenType } from '@elusiv/sdk';
-import { CLUSTER, DEVNET_RPC_URL, publickey_test } from 'src/core/test_constant/example_value';
 import { log } from 'console';
 import { sign } from 'crypto';
+import { CLUSTER } from 'src/core/test_constant/example_value';
 
 
 
