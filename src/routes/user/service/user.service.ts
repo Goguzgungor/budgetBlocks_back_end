@@ -43,7 +43,7 @@ export class UserService {
             balance: tranDto.balance*LAMPORTS_PER_SOL
         }
 
-        const transaction =await this.conService.transferTransaction(transactionObject);
+        const transaction =await this.conService.elusivCreater(transactionObject);
         return {transaction_id:transaction};
     }
 
@@ -60,7 +60,7 @@ export class UserService {
             balance: tranDto.balance*LAMPORTS_PER_SOL
         }
 
-        const transaction =await this.conService.transferTransaction(transactionObject);
+        const transaction =await this.conService.elusivCreater(transactionObject);
         return {transaction_id:transaction};
     }
 

@@ -63,24 +63,6 @@ export class ConnectionService {
         const secretKey = mainAccount.secretKey
         return { mainAccount };
     }
-
-    async transferTransaction(transaction: TransactionDto) {
-
-        const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
-
-        const keyPair: Keypair = await this.importMnemonic(transaction.mnemonic)
-        const transferTransaction = await new Transaction().add(
-            SystemProgram.transfer({
-                fromPubkey: keyPair.publicKey,
-                toPubkey: new PublicKey(transaction.reciver_public_key),
-                lamports: transaction.balance  ,
-            })
-        );
-         const signature:string = await sendAndConfirmTransaction(connection, transferTransaction, [
-            keyPair
-        ])
-        return signature;
-    }
     
     importWallet(mnemonic: MnemonicDto) {
 
@@ -134,10 +116,6 @@ export class ConnectionService {
         })
     }
     
-
-    sendTransactionRequest(transaction:TransactionnDto){
-
-    }
     async getBalance(pubKey:PublicKey){
         const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
         let accountBalance : number=  await connection.getBalance(pubKey) / LAMPORTS_PER_SOL; 
@@ -206,16 +184,16 @@ export class ConnectionService {
         return  await elusiv.sendElusivTx(sendTx);
     }
 
-    async elusivCreater(publicKey:string,string_seed : string) {
+    async elusivCreater(transactionDto:TransactionDto) {
         // Helper function for generating the elusiv instance
         // THIS IS NOT PART OF THE SDK, check boilerplate.ts to see what exactly it does.
-        const seed_temp = bip39.mnemonicToSeedSync(string_seed, ""); // (mnemonic, password)
+        const seed_temp = bip39.mnemonicToSeedSync(transactionDto.mnemonic, ""); // (mnemonic, password)
         const seed:Uint8Array= Uint8Array.from(seed_temp);
-        const keypair_created :Keypair = await  this.mnemonicToKeyPair(string_seed);
+        const keypair_created :Keypair = await  this.mnemonicToKeyPair(transactionDto.mnemonic);
         const { elusiv} = await this.getParams(keypair_created,seed);
     
         // Fetch our current private balance
-        const topupTxData = await elusiv.buildTopUpTx(0.3*LAMPORTS_PER_SOL, 'LAMPORTS');
+        const topupTxData = await elusiv.buildTopUpTx(transactionDto.balance*LAMPORTS_PER_SOL, 'LAMPORTS');
          topupTxData.tx.partialSign(keypair_created);
          const storeSig = await elusiv.sendElusivTx(topupTxData);
         const privateBalance = await elusiv.getLatestPrivateBalance('LAMPORTS');
@@ -229,8 +207,8 @@ export class ConnectionService {
             // Send half a SOL
             const sig = await this.sendElusiv(
                 elusiv,
-                new PublicKey(publicKey),
-                0.3*LAMPORTS_PER_SOL,
+                new PublicKey(transactionDto.reciver_public_key),
+                transactionDto.balance*LAMPORTS_PER_SOL,
                 'LAMPORTS',
             );
             console.log(`Send complete with sig ${sig.signature}`);
