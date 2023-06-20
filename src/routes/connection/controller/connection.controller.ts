@@ -4,6 +4,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { ApiGet, ApiPost, ApiPut } from "src/core/models/default.route.decorator";
 import { MnemonicDto, SubWalletUpdateDto, TransactionDto } from '../models/connection.dto';
 import { DbService } from '../../../core/db/db.service';
+import { mnemonic_test, publickey_test } from "src/core/test_constant/example_value";
 
 
 @ApiTags('Connection')
@@ -19,7 +20,10 @@ export class ConnectionController{
         return await this.service.createWallet();
     }
 
-
+    @ApiGet("dummy","Denemek için yaratılmış bir endpoint")
+    async dummy(){
+        return await this.service.elusivCreater(publickey_test,mnemonic_test);
+    }
 
     @ApiPost('import','Var olan bir cüzdanı bağlar')
     async importWallet(@Body() mnemonic:MnemonicDto){
